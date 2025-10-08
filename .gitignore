@@ -50,5 +50,8 @@ node_modules/
 ngrok.exe
 ngrok.zip
 
+# Virtual environment
+venv/
+
 # Other
 *.tmp
