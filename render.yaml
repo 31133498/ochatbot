@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ochatbot-backend
+    runtime: python3
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        value: $DATABASE_URL  # Set this in Render dashboard with PostgreSQL URL
+      - key: TWILIO_ACCOUNT_SID
+        value: $TWILIO_ACCOUNT_SID
+      - key: TWILIO_AUTH_TOKEN
+        value: $TWILIO_AUTH_TOKEN
+      - key: TWILIO_WHATSAPP_NUMBER
+        value: $TWILIO_WHATSAPP_NUMBER
+      - key: CORS_ORIGINS
+        value: $CORS_ORIGINS  # e.g., https://your-vercel-app.vercel.app
