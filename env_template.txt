@@ -1,0 +1,14 @@
+# Environment Variables Template for ochatbot
+
+# PostgreSQL database URL for Render deployment
+DATABASE_URL=postgresql://username:password@hostname:port/dbname
+
+# Twilio credentials for WhatsApp integration
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
+
+# CORS origins for frontend dashboard (comma separated)
+CORS_ORIGINS=https://your-vercel-app.vercel.app
+
+# Optional: Other environment variables can be added here as needed
