@@ -2,7 +2,7 @@ services:
   - type: web
     name: ochatbot-backend
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
     envVars:
       - key: DATABASE_URL
         value: $DATABASE_URL  # Set this in Render dashboard with PostgreSQL URL
