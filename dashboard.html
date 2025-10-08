@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpportunityBot Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .add-form { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        textarea { width: 100%; padding: 1rem; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px; resize: vertical; min-height: 120px; }
+        button { background: #667eea; color: white; padding: 1rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; }
+        button:hover { background: #5a6fd8; }
+        .opportunities { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .opportunity { padding: 1.5rem; border-bottom: 1px solid #f0f0f0; }
+        .opportunity:last-child { border-bottom: none; }
+        .opp-header { display: flex; justify-content: between; align-items: start; margin-bottom: 1rem; }
+        .opp-title { font-size: 1.2rem; font-weight: 600; color: #2d3748; margin-bottom: 0.5rem; }
+        .opp-meta { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .badge-category { background: #e3f2fd; color: #1976d2; }
+        .badge-priority { background: #fff3e0; color: #f57c00; }
+        .badge-deadline { background: #ffebee; color: #d32f2f; }
+        .opp-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .detail-item { font-size: 0.9rem; }
+        .detail-label { font-weight: 600; color: #666; }
+        .refresh-btn { float: right; background: #28a745; margin-bottom: 1rem; }
+        .loading { text-align: center; padding: 2rem; color: #666; }
+        .error { background: #ffebee; color: #d32f2f; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .success { background: #e8f5e8; color: #2e7d32; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 OpportunityBot Dashboard</h1>
+        <p>AI-Powered Opportunity Tracking & Analysis</p>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div>Total Opportunities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="jobCount">0</div>
+                <div>Job Opportunities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="highPriorityCount">0</div>
+                <div>High Priority (8+)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgPriority">0</div>
+                <div>Average Priority</div>
+            </div>
+        </div>
+
+        <div class="add-form">
+            <h2>➕ Add New Opportunity</h2>
+            <form id="opportunityForm">
+                <div class="form-group">
+                    <label for="content">Paste Opportunity Details:</label>
+                    <textarea id="content" placeholder="Paste the job posting, freelance gig, or any opportunity details here. The AI will automatically extract title, deadline, requirements, salary, and more!" required></textarea>
+                </div>
+                <button type="submit">🤖 Analyze with AI</button>
+            </form>
+            <div id="message"></div>
+        </div>
+
+        <div class="opportunities">
+            <button class="refresh-btn" onclick="loadOpportunities()">🔄 Refresh</button>
+            <h2 style="padding: 1rem;">📋 Your Opportunities</h2>
+            <div id="opportunitiesList" class="loading">
+                Loading opportunities...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOpportunities();
+        });
+
+        document.getElementById('opportunityForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const content = document.getElementById('content').value;
+            const messageDiv = document.getElementById('message');
+            
+            if (!content.trim()) {
+                showMessage('Please enter opportunity details', 'error');
+                return;
+            }
+
+            try {
+                showMessage('🤖 Analyzing with AI...', 'loading');
+                
+                const response = await fetch(`${API_BASE}/opportunities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✅ ${result.message}`, 'success');
+                    document.getElementById('content').value = '';
+                    loadOpportunities();
+                } else {
+                    showMessage(`❌ Error: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Network error: ${error.message}`, 'error');
+            }
+        });
+
+        async function loadOpportunities() {
+            try {
+                const response = await fetch(`${API_BASE}/opportunities`);
+                const opportunities = await response.json();
+                
+                displayOpportunities(opportunities);
+                updateStats(opportunities);
+            } catch (error) {
+                document.getElementById('opportunitiesList').innerHTML = 
+                    '<div class="error">❌ Error loading opportunities. Make sure the server is running at http://localhost:8000</div>';
+            }
+        }
+
+        function displayOpportunities(opportunities) {
+            const container = document.getElementById('opportunitiesList');
+            
+            if (opportunities.length === 0) {
+                container.innerHTML = '<div class="loading">No opportunities yet. Add your first one above! 👆</div>';
+                return;
+            }
+
+            container.innerHTML = opportunities.map(opp => `
+                <div class="opportunity">
+                    <div class="opp-title">${opp.title}</div>
+                    <div class="opp-meta">
+                        <span class="badge badge-category">${opp.category}</span>
+                        <span class="badge badge-priority">Priority: ${opp.priority_score}/10</span>
+                        ${opp.deadline ? `<span class="badge badge-deadline">📅 ${opp.deadline}</span>` : ''}
+                    </div>
+                    <div class="opp-details">
+                        ${opp.compensation ? `<div class="detail-item"><span class="detail-label">💰 Compensation:</span> ${opp.compensation}</div>` : ''}
+                        ${opp.location ? `<div class="detail-item"><span class="detail-label">📍 Location:</span> ${opp.location}</div>` : ''}
+                        ${opp.requirements.length > 0 ? `<div class="detail-item"><span class="detail-label">📋 Requirements:</span> ${opp.requirements.join(', ')}</div>` : ''}
+                        ${opp.contact_info && opp.contact_info !== '{}' ? `<div class="detail-item"><span class="detail-label">📞 Contact:</span> ${formatContactInfo(opp.contact_info)}</div>` : ''}
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                        Added: ${new Date(opp.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatContactInfo(contactInfo) {
+            try {
+                const info = typeof contactInfo === 'string' ? JSON.parse(contactInfo) : contactInfo;
+                const parts = [];
+                if (info.emails && info.emails.length > 0) parts.push(`📧 ${info.emails.join(', ')}`);
+                if (info.phones && info.phones.length > 0) parts.push(`📱 ${info.phones.join(', ')}`);
+                if (info.websites && info.websites.length > 0) parts.push(`🌐 ${info.websites.join(', ')}`);
+                return parts.join(' | ') || 'No contact info';
+            } catch {
+                return 'Contact info available';
+            }
+        }
+
+        function updateStats(opportunities) {
+            document.getElementById('totalCount').textContent = opportunities.length;
+            document.getElementById('jobCount').textContent = 
+                opportunities.filter(o => o.category === 'job').length;
+            document.getElementById('highPriorityCount').textContent = 
+                opportunities.filter(o => o.priority_score >= 8).length;
+            
+            const avgPriority = opportunities.length > 0 
+                ? (opportunities.reduce((sum, o) => sum + o.priority_score, 0) / opportunities.length).toFixed(1)
+                : 0;
+            document.getElementById('avgPriority').textContent = avgPriority;
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            if (type === 'success') {
+                setTimeout(() => messageDiv.textContent = '', 3000);
+            }
+        }
+    </script>
+</body>
+</html>

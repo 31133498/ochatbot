@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpportunityBot - Enhanced Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #1e293b; }
+        
+        .header { 
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%); 
+            color: white; padding: 2rem; text-align: center; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        /* Enhanced Stats */
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .stat-number { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .stat-label { color: #64748b; font-weight: 500; }
+        .stat-urgent { color: #ef4444; }
+        .stat-medium { color: #f59e0b; }
+        .stat-low { color: #10b981; }
+        .stat-total { color: #3b82f6; }
+        
+        /* Filters & Controls */
+        .controls { 
+            background: white; 
+            padding: 1.5rem; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group { display: flex; gap: 0.5rem; align-items: center; }
+        .filter-label { font-weight: 600; color: #475569; }
+        select, input { 
+            padding: 0.5rem 1rem; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus { outline: none; border-color: #3b82f6; }
+        
+        /* Add Form */
+        .add-form { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            margin-bottom: 2rem; 
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
+        textarea { 
+            width: 100%; 
+            padding: 1rem; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            resize: vertical; 
+            min-height: 120px;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: #3b82f6; }
+        
+        .btn { 
+            padding: 1rem 2rem; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-success { background: #10b981; color: white; font-size: 14px; padding: 0.5rem 1rem; }
+        .btn-warning { background: #f59e0b; color: white; font-size: 14px; padding: 0.5rem 1rem; }
+        .btn-danger { background: #ef4444; color: white; font-size: 14px; padding: 0.5rem 1rem; }
+        
+        /* Enhanced Opportunity Cards */
+        .opportunities-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+            gap: 1.5rem; 
+        }
+        
+        .opportunity-card { 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            overflow: hidden;
+            transition: all 0.3s;
+            border-left: 4px solid #e2e8f0;
+        }
+        .opportunity-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+        
+        /* Priority-based styling */
+        .priority-high { border-left-color: #ef4444; }
+        .priority-medium { border-left-color: #f59e0b; }
+        .priority-low { border-left-color: #10b981; }
+        
+        .card-header { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid #f1f5f9;
+            position: relative;
+        }
+        .card-title { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .priority-badge { 
+            position: absolute; 
+            top: 1rem; 
+            right: 1rem; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600;
+        }
+        .priority-high-badge { background: #fef2f2; color: #dc2626; }
+        .priority-medium-badge { background: #fffbeb; color: #d97706; }
+        .priority-low-badge { background: #f0fdf4; color: #16a34a; }
+        
+        .deadline-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            margin-top: 0.5rem;
+            font-size: 14px;
+        }
+        .deadline-overdue { color: #dc2626; font-weight: 600; }
+        .deadline-soon { color: #d97706; font-weight: 600; }
+        .deadline-normal { color: #64748b; }
+        .deadline-none { color: #9ca3af; }
+        
+        .card-body { padding: 1.5rem; }
+        .card-meta { 
+            display: flex; 
+            gap: 0.75rem; 
+            margin-bottom: 1rem; 
+            flex-wrap: wrap;
+        }
+        .meta-badge { 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: 500;
+        }
+        .badge-category { background: #dbeafe; color: #1d4ed8; }
+        .badge-status { background: #f3f4f6; color: #374151; }
+        
+        .card-details { margin-bottom: 1rem; }
+        .detail-row { 
+            display: flex; 
+            margin-bottom: 0.5rem; 
+            font-size: 14px;
+        }
+        .detail-label { 
+            font-weight: 600; 
+            color: #64748b; 
+            min-width: 100px;
+        }
+        .detail-value { color: #374151; }
+        
+        .card-actions { 
+            display: flex; 
+            gap: 0.5rem; 
+            padding-top: 1rem; 
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+        }
+        
+        /* Status Selector */
+        .status-selector { 
+            position: relative; 
+            display: inline-block;
+        }
+        .status-current { 
+            padding: 0.5rem 1rem; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px;
+            background: white;
+        }
+        .status-dropdown { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            background: white; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            z-index: 10;
+            min-width: 150px;
+            display: none;
+        }
+        .status-option { 
+            padding: 0.75rem 1rem; 
+            cursor: pointer; 
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .status-option:hover { background: #f8fafc; }
+        
+        /* Messages */
+        .message { 
+            padding: 1rem; 
+            border-radius: 8px; 
+            margin: 1rem 0; 
+            font-weight: 500;
+        }
+        .message-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .message-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .message-loading { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .opportunities-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .card-actions { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 OpportunityBot Pro</h1>
+        <p>AI-Powered Opportunity Management & Deadline Tracking</p>
+    </div>
+
+    <div class="container">
+        <!-- Enhanced Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number stat-total" id="totalCount">0</div>
+                <div class="stat-label">Total Opportunities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-urgent" id="urgentCount">0</div>
+                <div class="stat-label">High Priority (8+)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-warning" id="dueSoonCount">0</div>
+                <div class="stat-label">Due This Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-low" id="appliedCount">0</div>
+                <div class="stat-label">Applied</div>
+            </div>
+        </div>
+
+        <!-- Filters & Controls -->
+        <div class="controls">
+            <div class="filter-group">
+                <span class="filter-label">Filter:</span>
+                <select id="priorityFilter">
+                    <option value="">All Priorities</option>
+                    <option value="high">High (8-10)</option>
+                    <option value="medium">Medium (5-7)</option>
+                    <option value="low">Low (1-4)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="new">New</option>
+                    <option value="applied">Applied</option>
+                    <option value="interview">Interview</option>
+                    <option value="offer">Offer</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="deadlineFilter">
+                    <option value="">All Deadlines</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="week">Due This Week</option>
+                    <option value="month">Due This Month</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Search opportunities..." style="min-width: 200px;">
+            </div>
+            <button class="btn btn-primary" onclick="loadOpportunities()">🔄 Refresh</button>
+        </div>
+
+        <!-- Add Form -->
+        <div class="add-form">
+            <h2>➕ Add New Opportunity</h2>
+            <form id="opportunityForm">
+                <div class="form-group">
+                    <label for="content">Paste Opportunity Details:</label>
+                    <textarea id="content" placeholder="Paste job postings, freelance projects, or any opportunity details here. AI will extract title, deadline, requirements, salary, and priority automatically!" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">🤖 Analyze with AI</button>
+            </form>
+            <div id="message"></div>
+        </div>
+
+        <!-- Opportunities Grid -->
+        <div id="opportunitiesContainer">
+            <div class="opportunities-grid" id="opportunitiesGrid">
+                <!-- Opportunities will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let allOpportunities = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOpportunities();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Form submission
+            document.getElementById('opportunityForm').addEventListener('submit', handleFormSubmit);
+            
+            // Filters
+            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('deadlineFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const content = document.getElementById('content').value;
+            
+            if (!content.trim()) {
+                showMessage('Please enter opportunity details', 'error');
+                return;
+            }
+
+            try {
+                showMessage('🤖 Analyzing with AI...', 'loading');
+                
+                const response = await fetch(`${API_BASE}/opportunities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✅ ${result.message}`, 'success');
+                    document.getElementById('content').value = '';
+                    loadOpportunities();
+                } else {
+                    showMessage(`❌ Error: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadOpportunities() {
+            try {
+                const response = await fetch(`${API_BASE}/opportunities`);
+                allOpportunities = await response.json();
+                
+                applyFilters();
+                updateStats();
+            } catch (error) {
+                document.getElementById('opportunitiesGrid').innerHTML = 
+                    '<div class="message message-error">❌ Error loading opportunities. Make sure the server is running.</div>';
+            }
+        }
+
+        function applyFilters() {
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const deadlineFilter = document.getElementById('deadlineFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allOpportunities.filter(opp => {
+                // Priority filter
+                if (priorityFilter) {
+                    const priority = opp.priority_score;
+                    if (priorityFilter === 'high' && priority < 8) return false;
+                    if (priorityFilter === 'medium' && (priority < 5 || priority >= 8)) return false;
+                    if (priorityFilter === 'low' && priority >= 5) return false;
+                }
+
+                // Status filter
+                if (statusFilter && opp.status !== statusFilter) return false;
+
+                // Deadline filter
+                if (deadlineFilter && opp.deadline) {
+                    const deadline = new Date(opp.deadline);
+                    const now = new Date();
+                    const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (deadlineFilter === 'overdue' && diffDays >= 0) return false;
+                    if (deadlineFilter === 'week' && (diffDays < 0 || diffDays > 7)) return false;
+                    if (deadlineFilter === 'month' && (diffDays < 0 || diffDays > 30)) return false;
+                }
+
+                // Search filter
+                if (searchTerm && !opp.title.toLowerCase().includes(searchTerm)) return false;
+
+                return true;
+            });
+
+            displayOpportunities(filtered);
+        }
+
+        function displayOpportunities(opportunities) {
+            const container = document.getElementById('opportunitiesGrid');
+            
+            if (opportunities.length === 0) {
+                container.innerHTML = '<div class="message">No opportunities match your filters. Try adjusting the filters or add new opportunities!</div>';
+                return;
+            }
+
+            // Sort by priority (high to low) then by deadline
+            opportunities.sort((a, b) => {
+                if (b.priority_score !== a.priority_score) {
+                    return b.priority_score - a.priority_score;
+                }
+                if (a.deadline && b.deadline) {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                }
+                return 0;
+            });
+
+            container.innerHTML = opportunities.map(opp => createOpportunityCard(opp)).join('');
+        }
+
+        function createOpportunityCard(opp) {
+            const priorityClass = getPriorityClass(opp.priority_score);
+            const priorityBadge = getPriorityBadge(opp.priority_score);
+            const deadlineInfo = getDeadlineInfo(opp.deadline);
+            
+            return `
+                <div class="opportunity-card ${priorityClass}">
+                    <div class="card-header">
+                        <div class="card-title">${opp.title}</div>
+                        <div class="priority-badge ${priorityBadge.class}">
+                            ${priorityBadge.text}
+                        </div>
+                        <div class="deadline-info ${deadlineInfo.class}">
+                            ${deadlineInfo.icon} ${deadlineInfo.text}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span class="meta-badge badge-category">${opp.category}</span>
+                            <span class="meta-badge badge-status">${opp.status}</span>
+                        </div>
+                        
+                        <div class="card-details">
+                            ${opp.compensation ? `<div class="detail-row"><span class="detail-label">💰 Salary:</span><span class="detail-value">${opp.compensation}</span></div>` : ''}
+                            ${opp.location ? `<div class="detail-row"><span class="detail-label">📍 Location:</span><span class="detail-value">${opp.location}</span></div>` : ''}
+                            ${opp.requirements.length > 0 ? `<div class="detail-row"><span class="detail-label">📋 Skills:</span><span class="detail-value">${opp.requirements.slice(0, 3).join(', ')}${opp.requirements.length > 3 ? '...' : ''}</span></div>` : ''}
+                        </div>
+                        
+                        <div class="card-actions">
+                            <div class="status-selector">
+                                <div class="status-current" onclick="toggleStatusDropdown(${opp.id})">
+                                    ${getStatusIcon(opp.status)} ${opp.status}
+                                </div>
+                                <div class="status-dropdown" id="status-${opp.id}">
+                                    <div class="status-option" onclick="updateStatus(${opp.id}, 'new')">📝 New</div>
+                                    <div class="status-option" onclick="updateStatus(${opp.id}, 'applied')">📤 Applied</div>
+                                    <div class="status-option" onclick="updateStatus(${opp.id}, 'interview')">🎯 Interview</div>
+                                    <div class="status-option" onclick="updateStatus(${opp.id}, 'offer')">🎉 Offer</div>
+                                    <div class="status-option" onclick="updateStatus(${opp.id}, 'rejected')">❌ Rejected</div>
+                                </div>
+                            </div>
+                            ${opp.deadline ? `<button class="btn btn-warning" onclick="setReminder(${opp.id})">⏰ Remind</button>` : ''}
+                            <button class="btn btn-success" onclick="viewDetails(${opp.id})">👁️ View</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getPriorityClass(score) {
+            if (score >= 8) return 'priority-high';
+            if (score >= 5) return 'priority-medium';
+            return 'priority-low';
+        }
+
+        function getPriorityBadge(score) {
+            if (score >= 8) return { class: 'priority-high-badge', text: `🔥 ${score}/10` };
+            if (score >= 5) return { class: 'priority-medium-badge', text: `⭐ ${score}/10` };
+            return { class: 'priority-low-badge', text: `✅ ${score}/10` };
+        }
+
+        function getDeadlineInfo(deadline) {
+            if (!deadline) return { class: 'deadline-none', icon: '📅', text: 'No deadline set' };
+            
+            const deadlineDate = new Date(deadline);
+            const now = new Date();
+            const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { class: 'deadline-overdue', icon: '🚨', text: `Overdue by ${Math.abs(diffDays)} days` };
+            } else if (diffDays <= 7) {
+                return { class: 'deadline-soon', icon: '⚡', text: `Due in ${diffDays} days` };
+            } else {
+                return { class: 'deadline-normal', icon: '📅', text: deadlineDate.toLocaleDateString() };
+            }
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'new': '📝',
+                'applied': '📤',
+                'interview': '🎯',
+                'offer': '🎉',
+                'rejected': '❌'
+            };
+            return icons[status] || '📝';
+        }
+
+        function updateStats() {
+            const total = allOpportunities.length;
+            const urgent = allOpportunities.filter(o => o.priority_score >= 8).length;
+            const applied = allOpportunities.filter(o => o.status === 'applied').length;
+            
+            // Count opportunities due this week
+            const dueSoon = allOpportunities.filter(o => {
+                if (!o.deadline) return false;
+                const deadline = new Date(o.deadline);
+                const now = new Date();
+                const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 7;
+            }).length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('urgentCount').textContent = urgent;
+            document.getElementById('dueSoonCount').textContent = dueSoon;
+            document.getElementById('appliedCount').textContent = applied;
+        }
+
+        function toggleStatusDropdown(id) {
+            const dropdown = document.getElementById(`status-${id}`);
+            const isVisible = dropdown.style.display === 'block';
+            
+            // Hide all dropdowns
+            document.querySelectorAll('.status-dropdown').forEach(d => d.style.display = 'none');
+            
+            // Show this dropdown if it wasn't visible
+            if (!isVisible) {
+                dropdown.style.display = 'block';
+            }
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                // Hide dropdown
+                document.getElementById(`status-${id}`).style.display = 'none';
+                
+                // Update in memory
+                const opp = allOpportunities.find(o => o.id === id);
+                if (opp) {
+                    opp.status = newStatus;
+                    applyFilters();
+                    updateStats();
+                }
+                
+                showMessage(`✅ Status updated to ${newStatus}`, 'success');
+            } catch (error) {
+                showMessage(`❌ Error updating status: ${error.message}`, 'error');
+            }
+        }
+
+        function setReminder(id) {
+            showMessage('⏰ Reminder feature coming soon!', 'loading');
+        }
+
+        function viewDetails(id) {
+            const opp = allOpportunities.find(o => o.id === id);
+            if (opp) {
+                alert(`Opportunity Details:\n\n${opp.content}`);
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = message;
+            
+            if (type === 'success') {
+                setTimeout(() => messageDiv.textContent = '', 3000);
+            }
+        }
+
+        // Hide dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.status-selector')) {
+                document.querySelectorAll('.status-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+    </script>
+</body>
+</html>

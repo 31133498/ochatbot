@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpportunityBot - Dark Aura Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; 
+            background: #0a0a0a; 
+            color: #e2e8f0; 
+            min-height: 100vh;
+        }
+        
+        /* Dark Aura Header */
+        .header { 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); 
+            color: #00d4ff; 
+            padding: 2rem; 
+            text-align: center; 
+            border-bottom: 2px solid #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        .header h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 0.5rem; 
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            font-weight: 700;
+        }
+        .header p { 
+            opacity: 0.8; 
+            font-size: 1.1rem; 
+            color: #64ffda;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        
+        /* Dark Stats Cards */
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: linear-gradient(145deg, #1a1a2e, #16213e); 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            border: 1px solid #00d4ff; 
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .stat-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            margin-bottom: 0.5rem; 
+        }
+        .stat-label { color: #94a3b8; font-weight: 500; }
+        .stat-urgent { color: #ff6b6b; text-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+        .stat-medium { color: #ffd93d; text-shadow: 0 0 10px rgba(255, 217, 61, 0.5); }
+        .stat-low { color: #6bcf7f; text-shadow: 0 0 10px rgba(107, 207, 127, 0.5); }
+        .stat-total { color: #00d4ff; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+        
+        /* Dark Controls */
+        .controls { 
+            background: linear-gradient(145deg, #1a1a2e, #16213e); 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            border: 1px solid #00d4ff; 
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group { display: flex; gap: 0.5rem; align-items: center; }
+        .filter-label { font-weight: 600; color: #64ffda; }
+        select, input { 
+            padding: 0.75rem 1rem; 
+            border: 1px solid #00d4ff; 
+            border-radius: 8px; 
+            font-size: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        select:focus, input:focus { 
+            outline: none; 
+            border-color: #64ffda; 
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+        
+        /* Add Form */
+        .add-form { 
+            background: linear-gradient(145deg, #1a1a2e, #16213e); 
+            padding: 2rem; 
+            border-radius: 12px; 
+            border: 1px solid #00d4ff; 
+            margin-bottom: 2rem; 
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            color: #64ffda; 
+        }
+        textarea { 
+            width: 100%; 
+            padding: 1rem; 
+            border: 1px solid #00d4ff; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            resize: vertical; 
+            min-height: 120px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        textarea:focus { 
+            outline: none; 
+            border-color: #64ffda; 
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
+        }
+        
+        .btn { 
+            padding: 1rem 2rem; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+        .btn-primary { 
+            background: linear-gradient(145deg, #00d4ff, #0099cc); 
+            color: #0a0a0a; 
+            border: 1px solid #00d4ff;
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+        .btn-small { 
+            padding: 0.5rem 1rem; 
+            font-size: 12px; 
+            border-radius: 6px;
+        }
+        .btn-success { background: #6bcf7f; color: #0a0a0a; }
+        .btn-warning { background: #ffd93d; color: #0a0a0a; }
+        .btn-danger { background: #ff6b6b; color: #0a0a0a; }
+        
+        /* Dark Table */
+        .table-container { 
+            background: linear-gradient(145deg, #1a1a2e, #16213e); 
+            border-radius: 12px; 
+            border: 1px solid #00d4ff; 
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+        }
+        
+        .table-header { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid #00d4ff; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: #00d4ff; 
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        
+        .table-wrapper { overflow-x: auto; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px;
+        }
+        
+        th { 
+            background: linear-gradient(145deg, #0f172a, #1e293b); 
+            padding: 1rem; 
+            text-align: left; 
+            font-weight: 600; 
+            color: #64ffda; 
+            border-bottom: 2px solid #00d4ff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td { 
+            padding: 1rem; 
+            border-bottom: 1px solid #334155; 
+            vertical-align: top;
+        }
+        
+        tr { transition: all 0.2s; }
+        tr:hover { 
+            background: rgba(0, 212, 255, 0.05); 
+            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+        
+        /* Priority Indicators */
+        .priority-indicator { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600;
+        }
+        .priority-high { 
+            background: rgba(255, 107, 107, 0.2); 
+            color: #ff6b6b; 
+            border: 1px solid #ff6b6b;
+        }
+        .priority-medium { 
+            background: rgba(255, 217, 61, 0.2); 
+            color: #ffd93d; 
+            border: 1px solid #ffd93d;
+        }
+        .priority-low { 
+            background: rgba(107, 207, 127, 0.2); 
+            color: #6bcf7f; 
+            border: 1px solid #6bcf7f;
+        }
+        
+        /* Status Badges */
+        .status-badge { 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .status-new { background: rgba(100, 255, 218, 0.2); color: #64ffda; }
+        .status-applied { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
+        .status-interview { background: rgba(255, 217, 61, 0.2); color: #ffd93d; }
+        .status-offer { background: rgba(107, 207, 127, 0.2); color: #6bcf7f; }
+        .status-rejected { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        
+        /* Deadline Indicators */
+        .deadline-overdue { color: #ff6b6b; font-weight: 600; }
+        .deadline-soon { color: #ffd93d; font-weight: 600; }
+        .deadline-normal { color: #94a3b8; }
+        .deadline-none { color: #64748b; }
+        
+        /* Action Buttons */
+        .action-buttons { 
+            display: flex; 
+            gap: 0.5rem; 
+            flex-wrap: wrap;
+        }
+        
+        /* Status Dropdown */
+        .status-dropdown { 
+            position: relative; 
+            display: inline-block;
+        }
+        .status-current { 
+            padding: 0.5rem 1rem; 
+            border: 1px solid #00d4ff; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 12px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .status-options { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            background: #1a1a2e; 
+            border: 1px solid #00d4ff; 
+            border-radius: 6px; 
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            z-index: 20;
+            min-width: 120px;
+            display: none;
+        }
+        .status-option { 
+            padding: 0.5rem 1rem; 
+            cursor: pointer; 
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .status-option:hover { background: rgba(0, 212, 255, 0.1); }
+        
+        /* Messages */
+        .message { 
+            padding: 1rem; 
+            border-radius: 8px; 
+            margin: 1rem 0; 
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+        .message-success { 
+            background: rgba(107, 207, 127, 0.1); 
+            color: #6bcf7f; 
+            border-left-color: #6bcf7f;
+        }
+        .message-error { 
+            background: rgba(255, 107, 107, 0.1); 
+            color: #ff6b6b; 
+            border-left-color: #ff6b6b;
+        }
+        .message-loading { 
+            background: rgba(0, 212, 255, 0.1); 
+            color: #00d4ff; 
+            border-left-color: #00d4ff;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .table-wrapper { font-size: 12px; }
+            th, td { padding: 0.5rem; }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { 
+            background: #00d4ff; 
+            border-radius: 4px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #64ffda; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ OpportunityBot Dark Aura</h1>
+        <p>Elite Opportunity Management System</p>
+    </div>
+
+    <div class="container">
+        <!-- Dark Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number stat-total" id="totalCount">0</div>
+                <div class="stat-label">Total Opportunities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-urgent" id="urgentCount">0</div>
+                <div class="stat-label">High Priority</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-medium" id="dueSoonCount">0</div>
+                <div class="stat-label">Due This Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-low" id="appliedCount">0</div>
+                <div class="stat-label">Applied</div>
+            </div>
+        </div>
+
+        <!-- Dark Controls -->
+        <div class="controls">
+            <div class="filter-group">
+                <span class="filter-label">Priority:</span>
+                <select id="priorityFilter">
+                    <option value="">All</option>
+                    <option value="high">High (8-10)</option>
+                    <option value="medium">Medium (5-7)</option>
+                    <option value="low">Low (1-4)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Status:</span>
+                <select id="statusFilter">
+                    <option value="">All</option>
+                    <option value="new">New</option>
+                    <option value="applied">Applied</option>
+                    <option value="interview">Interview</option>
+                    <option value="offer">Offer</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Deadline:</span>
+                <select id="deadlineFilter">
+                    <option value="">All</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Search opportunities..." style="min-width: 200px;">
+            </div>
+            <button class="btn btn-primary" onclick="loadOpportunities()">🔄 Refresh</button>
+        </div>
+
+        <!-- Add Form -->
+        <div class="add-form">
+            <h2 style="color: #00d4ff; margin-bottom: 1rem;">➕ Add New Opportunity</h2>
+            <form id="opportunityForm">
+                <div class="form-group">
+                    <label for="content">Paste Opportunity Details:</label>
+                    <textarea id="content" placeholder="Paste job postings, freelance projects, or any opportunity details here. AI will extract everything automatically!" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">🤖 Analyze with AI</button>
+            </form>
+            <div id="message"></div>
+        </div>
+
+        <!-- Dark Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">📊 Opportunities Database</div>
+                <div style="color: #64ffda; font-size: 14px;" id="tableCount">0 opportunities</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="opportunitiesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 250px;">Title & Company</th>
+                            <th style="width: 80px;">Priority</th>
+                            <th style="width: 80px;">Status</th>
+                            <th style="width: 100px;">Deadline</th>
+                            <th style="width: 120px;">Compensation</th>
+                            <th style="width: 100px;">Location</th>
+                            <th style="width: 150px;">Requirements</th>
+                            <th style="width: 120px;">Application Link</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opportunitiesTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 3rem; color: #64748b;">
+                                Loading opportunities...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let allOpportunities = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOpportunities();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('opportunityForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('deadlineFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const content = document.getElementById('content').value;
+            
+            if (!content.trim()) {
+                showMessage('Please enter opportunity details', 'error');
+                return;
+            }
+
+            try {
+                showMessage('🤖 Analyzing with AI...', 'loading');
+                
+                const response = await fetch(`${API_BASE}/opportunities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✅ ${result.message}`, 'success');
+                    document.getElementById('content').value = '';
+                    loadOpportunities();
+                } else {
+                    showMessage(`❌ Error: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadOpportunities() {
+            try {
+                const response = await fetch(`${API_BASE}/opportunities`);
+                allOpportunities = await response.json();
+                
+                applyFilters();
+                updateStats();
+            } catch (error) {
+                document.getElementById('opportunitiesTableBody').innerHTML = 
+                    '<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #ff6b6b;">❌ Error loading opportunities. Make sure the server is running.</td></tr>';
+            }
+        }
+
+        function applyFilters() {
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const deadlineFilter = document.getElementById('deadlineFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allOpportunities.filter(opp => {
+                if (priorityFilter) {
+                    const priority = opp.priority_score;
+                    if (priorityFilter === 'high' && priority < 8) return false;
+                    if (priorityFilter === 'medium' && (priority < 5 || priority >= 8)) return false;
+                    if (priorityFilter === 'low' && priority >= 5) return false;
+                }
+
+                if (statusFilter && opp.status !== statusFilter) return false;
+
+                if (deadlineFilter && opp.deadline) {
+                    const deadline = new Date(opp.deadline);
+                    const now = new Date();
+                    const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (deadlineFilter === 'overdue' && diffDays >= 0) return false;
+                    if (deadlineFilter === 'week' && (diffDays < 0 || diffDays > 7)) return false;
+                    if (deadlineFilter === 'month' && (diffDays < 0 || diffDays > 30)) return false;
+                }
+
+                if (searchTerm && !opp.title.toLowerCase().includes(searchTerm)) return false;
+
+                return true;
+            });
+
+            displayOpportunities(filtered);
+        }
+
+        function displayOpportunities(opportunities) {
+            const tbody = document.getElementById('opportunitiesTableBody');
+            const tableCount = document.getElementById('tableCount');
+            
+            tableCount.textContent = `${opportunities.length} opportunities`;
+            
+            if (opportunities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 3rem; color: #64748b;">No opportunities match your filters.</td></tr>';
+                return;
+            }
+
+            // Sort by priority then deadline
+            opportunities.sort((a, b) => {
+                if (b.priority_score !== a.priority_score) {
+                    return b.priority_score - a.priority_score;
+                }
+                if (a.deadline && b.deadline) {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                }
+                return 0;
+            });
+
+            tbody.innerHTML = opportunities.map(opp => createTableRow(opp)).join('');
+        }
+
+        function createTableRow(opp) {
+            const priorityInfo = getPriorityInfo(opp.priority_score);
+            const deadlineInfo = getDeadlineInfo(opp.deadline);
+            const statusInfo = getStatusInfo(opp.status);
+            
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 0.25rem;">${opp.title}</div>
+                        <div style="font-size: 12px; color: #94a3b8;">${opp.category}</div>
+                    </td>
+                    <td>
+                        <div class="priority-indicator ${priorityInfo.class}">
+                            ${priorityInfo.icon} ${opp.priority_score}/10
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-dropdown">
+                            <div class="status-current" onclick="toggleStatusDropdown(${opp.id})">
+                                <span class="status-badge ${statusInfo.class}">${statusInfo.icon} ${opp.status}</span>
+                            </div>
+                            <div class="status-options" id="status-${opp.id}">
+                                <div class="status-option" onclick="updateStatus(${opp.id}, 'new')">📝 New</div>
+                                <div class="status-option" onclick="updateStatus(${opp.id}, 'applied')">📤 Applied</div>
+                                <div class="status-option" onclick="updateStatus(${opp.id}, 'interview')">🎯 Interview</div>
+                                <div class="status-option" onclick="updateStatus(${opp.id}, 'offer')">🎉 Offer</div>
+                                <div class="status-option" onclick="updateStatus(${opp.id}, 'rejected')">❌ Rejected</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="${deadlineInfo.class}">
+                            ${deadlineInfo.icon} ${deadlineInfo.text}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="color: #64ffda; font-weight: 500;">
+                            ${opp.compensation || 'Not specified'}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="color: #94a3b8;">
+                            ${opp.location || 'Not specified'}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 12px; color: #94a3b8;">
+                            ${opp.requirements.length > 0 ? opp.requirements.slice(0, 2).join(', ') + (opp.requirements.length > 2 ? '...' : '') : 'None specified'}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="color: #00d4ff;">
+                            ${getApplicationLink(opp)}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-success btn-small" onclick="viewDetails(${opp.id})">👁️ View</button>
+                            ${opp.deadline ? `<button class="btn btn-warning btn-small" onclick="setReminder(${opp.id})">⏰ Remind</button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function getPriorityInfo(score) {
+            if (score >= 8) return { class: 'priority-high', icon: '🔥' };
+            if (score >= 5) return { class: 'priority-medium', icon: '⭐' };
+            return { class: 'priority-low', icon: '✅' };
+        }
+
+        function getDeadlineInfo(deadline) {
+            if (!deadline) return { class: 'deadline-none', icon: '📅', text: 'No deadline' };
+            
+            const deadlineDate = new Date(deadline);
+            const now = new Date();
+            const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { class: 'deadline-overdue', icon: '🚨', text: `Overdue ${Math.abs(diffDays)}d` };
+            } else if (diffDays <= 7) {
+                return { class: 'deadline-soon', icon: '⚡', text: `${diffDays} days left` };
+            } else {
+                return { class: 'deadline-normal', icon: '📅', text: deadlineDate.toLocaleDateString() };
+            }
+        }
+
+        function getStatusInfo(status) {
+            const statusMap = {
+                'new': { class: 'status-new', icon: '📝' },
+                'applied': { class: 'status-applied', icon: '📤' },
+                'interview': { class: 'status-interview', icon: '🎯' },
+                'offer': { class: 'status-offer', icon: '🎉' },
+                'rejected': { class: 'status-rejected', icon: '❌' }
+            };
+            return statusMap[status] || statusMap['new'];
+        }
+
+        function getApplicationLink(opp) {
+            // Extract application links from contact info or content
+            let link = null;
+            
+            // Check contact info for websites
+            try {
+                const contactInfo = typeof opp.contact_info === 'string' ? JSON.parse(opp.contact_info) : opp.contact_info;
+                if (contactInfo && contactInfo.websites && contactInfo.websites.length > 0) {
+                    link = contactInfo.websites[0];
+                }
+            } catch (e) {}
+            
+            // If no website in contact info, look for common application URLs in content
+            if (!link && opp.content) {
+                const urlRegex = /https?:\/\/(www\.)?(linkedin\.com\/jobs|indeed\.com|glassdoor\.com|monster\.com|naukri\.com|jobs\.com|workday\.com|lever\.co|greenhouse\.io|apply\.workable\.com|careers\.[a-zA-Z0-9.-]+|[a-zA-Z0-9.-]+\/careers|[a-zA-Z0-9.-]+\/jobs)[^\s]*/gi;
+                const matches = opp.content.match(urlRegex);
+                if (matches && matches.length > 0) {
+                    link = matches[0];
+                }
+            }
+            
+            if (link) {
+                return `<a href="${link}" target="_blank" style="color: #00d4ff; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; border: 1px solid #00d4ff; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background='transparent'">
+                    🔗 Apply
+                </a>`;
+            } else {
+                return '<span style="color: #64748b; font-size: 12px;">No link found</span>';
+            }
+        }
+
+        function updateStats() {
+            const total = allOpportunities.length;
+            const urgent = allOpportunities.filter(o => o.priority_score >= 8).length;
+            const applied = allOpportunities.filter(o => o.status === 'applied').length;
+            
+            const dueSoon = allOpportunities.filter(o => {
+                if (!o.deadline) return false;
+                const deadline = new Date(o.deadline);
+                const now = new Date();
+                const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 7;
+            }).length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('urgentCount').textContent = urgent;
+            document.getElementById('dueSoonCount').textContent = dueSoon;
+            document.getElementById('appliedCount').textContent = applied;
+        }
+
+        function toggleStatusDropdown(id) {
+            const dropdown = document.getElementById(`status-${id}`);
+            const isVisible = dropdown.style.display === 'block';
+            
+            document.querySelectorAll('.status-options').forEach(d => d.style.display = 'none');
+            
+            if (!isVisible) {
+                dropdown.style.display = 'block';
+            }
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                document.getElementById(`status-${id}`).style.display = 'none';
+                
+                const opp = allOpportunities.find(o => o.id === id);
+                if (opp) {
+                    opp.status = newStatus;
+                    applyFilters();
+                    updateStats();
+                }
+                
+                showMessage(`✅ Status updated to ${newStatus}`, 'success');
+            } catch (error) {
+                showMessage(`❌ Error updating status: ${error.message}`, 'error');
+            }
+        }
+
+        function setReminder(id) {
+            showMessage('⏰ Reminder feature coming soon!', 'loading');
+        }
+
+        function viewDetails(id) {
+            const opp = allOpportunities.find(o => o.id === id);
+            if (opp) {
+                alert(`Opportunity Details:\n\n${opp.content}`);
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = message;
+            
+            if (type === 'success') {
+                setTimeout(() => messageDiv.textContent = '', 3000);
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.status-dropdown')) {
+                document.querySelectorAll('.status-options').forEach(d => d.style.display = 'none');
+            }
+        });
+    </script>
+</body>
+</html>
