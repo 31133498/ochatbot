@@ -14,3 +14,5 @@ services:
         value: $TWILIO_WHATSAPP_NUMBER
       - key: CORS_ORIGINS
         value: $CORS_ORIGINS  # e.g., https://your-vercel-app.vercel.app
+      - key: PORT
+        value: 8000

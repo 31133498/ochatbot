@@ -1,0 +1,2 @@
+- [x] Edit render.yaml to add PORT environment variable with default value 8000
+- [x] Edit Dockerfile CMD to use shell form for environment variable expansion
