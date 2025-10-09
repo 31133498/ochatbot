@@ -1,2 +1,3 @@
-- [x] Edit render.yaml to add PORT environment variable with default value 8000
-- [x] Edit Dockerfile CMD to use shell form for environment variable expansion
+- [x] Update fetch URL in dashboard/src/pages/index.tsx to use deployed backend URL
+- [x] Add create opportunity functionality to the frontend
+- [ ] Update CORS_ORIGINS in render.yaml to allow frontend domain (requires Vercel URL)

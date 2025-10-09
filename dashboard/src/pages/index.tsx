@@ -15,6 +15,8 @@ export default function Dashboard() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([])
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [newOpportunityContent, setNewOpportunityContent] = useState('')
 
   useEffect(() => {
     fetchOpportunities()
@@ -22,11 +24,32 @@ export default function Dashboard() {
 
   const fetchOpportunities = async () => {
     try {
-      const response = await fetch('http://localhost:8000/opportunities')
+      const response = await fetch('https://ochatbot-9nd0.onrender.com/opportunities')
       const data = await response.json()
       setOpportunities(data)
     } catch (error) {
       console.error('Error fetching opportunities:', error)
+    }
+  }
+
+  const createOpportunity = async () => {
+    try {
+      const response = await fetch('https://ochatbot-9nd0.onrender.com/opportunities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: newOpportunityContent }),
+      })
+      if (response.ok) {
+        setNewOpportunityContent('')
+        setShowModal(false)
+        fetchOpportunities() // Refresh the list
+      } else {
+        console.error('Error creating opportunity')
+      }
+    } catch (error) {
+      console.error('Error creating opportunity:', error)
     }
   }
 
@@ -60,7 +83,10 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <h1 className="text-3xl font-bold text-gray-900">OpportunityBot Dashboard</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+              onClick={() => setShowModal(true)}
+            >
               <Plus size={20} />
               Add Opportunity
             </button>
@@ -164,5 +190,35 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+
+    {/* Modal for adding new opportunity */}
+    {showModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <h2 className="text-xl font-semibold mb-4">Add New Opportunity</h2>
+          <textarea
+            className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+            rows={4}
+            value={newOpportunityContent}
+            onChange={(e) => setNewOpportunityContent(e.target.value)}
+            placeholder="Enter opportunity details here..."
+          />
+          <div className="flex justify-end gap-4">
+            <button
+              className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+              onClick={() => setShowModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              onClick={createOpportunity}
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   )
 }
